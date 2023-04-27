@@ -1,0 +1,303 @@
+---
+title: "Empowering Young Women: Informed Decision-Making in Sexual and Reproductive Health"
+format: html
+echo: false
+message: false
+warning: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(rmarkdown)
+library(ggplot2)
+library(dplyr)
+library(maps)
+library(ggmap)
+library(tidyverse)
+library(gapminder)
+
+
+
+`unicef_indicator_1.(1)` <- read.csv("/cloud/project/unicef_indicator_1 (1).csv")
+`unicef_metadata.(1)` <- read.csv("/cloud/project/unicef_metadata (1).csv")
+
+
+```
+
+
+## **Introduction**
+
+Informed decision-making in sexual and reproductive health is essential for women's empowerment and well-being. Progress has been made in recent years, with international efforts such as the International Conference on Population and Development's (ICPD) Programme of Action and the inclusion of sexual and reproductive health in the United Nations' Sustainable Development Goals (SDGs). However, disparities remain, and factors such as poverty, gender inequality, and cultural norms continue to limit women's ability to make informed decisions about their reproductive lives. Continued investment in women's sexual and reproductive health is vital to achieving gender equality and improving overall health and well-being.
+
+This report depicts an overview of women between the **ages of 15 and 19** who independently choose their partners, use contraceptives, and access reproductive healthcare in different nations. The report analyzes the correlation between a country's socio-economic indicators, including GDP per capita and life expectancy, and its decision-making patterns. This report aims to recognize patterns and trends that can provide insights to policymakers, non-governmental organizations, and other stakeholders committed to empowering young women globally.
+
+<style>
+.callout {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-left-width: 5px;
+  border-radius: 3px;
+  border-left-color: #2196F3;
+}
+</style>
+
+<div class="callout">
+**Read more**: Further insights regarding Women's Sexual & reproductive health can be found here: [UNFPA](https://www.unfpa.org/sexual-reproductive-health)
+</div>
+
+![UN SDG 3-7](MC_Target_3.7.jpg)
+
+
+<style>
+.small-font {
+  font-size: 15px;
+}
+</style>
+
+
+## *Interactive Bar Chart: Observation Values by Country*
+<div class="small-font">
+
+This interactive bar chart showcases the observation values for a selected list of countries, focusing on young women's ability to make informed decisions regarding their sexual and reproductive health. The chart provides an insightful way to compare countries and identify patterns, helping to prioritize efforts to improve decision-making autonomy for young women.
+
+**Key Findings:**
+
+- **Country Comparisons:** The bar chart highlights the variation in observation values across different countries. By examining the height of each bar, users can quickly identify countries with higher or lower values, offering a basis for further investigation into the underlying factors.
+- **Regional Patterns:** The selection of countries on the bar chart reveals regional patterns in observation values, with some regions displaying consistently higher or lower values. These patterns emphasize the importance of context-specific approaches to address social, economic, and cultural factors that impact young women's autonomy.
+
+
+</div>
+<style>
+.callout {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-left-width: 5px;
+  border-radius: 3px;
+  border-left-color: #2196F3;
+}
+</style>
+
+<div class="callout">
+**Insights**: The bar chart reveals **significant** variations in observation values across countries, indicating that young women's ability to make informed choices about their sexual and reproductive health is influenced by *diverse cultural, social, and economic factors.*
+</div>
+
+
+```{r}
+
+# Load required libraries
+library(ggplot2)
+library(plotly)
+library(RColorBrewer)
+
+# Create a custom color palette with darker shades
+n_countries <- length(unique(`unicef_indicator_1.(1)`$country))
+color_palette <- colorRampPalette(brewer.pal(9, "Blues"))(n_countries)
+colors <- setNames(color_palette, unique(`unicef_indicator_1.(1)`$country))
+
+# Create the bar chart object
+bar_chart <- ggplot(`unicef_indicator_1.(1)`, aes(x = reorder(country, obs_value), y = obs_value, fill = country)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = colors) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  xlab("Country") +
+  ylab("Observation Value")
+
+# Convert the ggplot2 object to a plotly object
+interactive_bar_chart <- ggplotly(bar_chart)
+
+# Render the interactive bar chart in R Markdown document
+interactive_bar_chart
+print(interactive_bar_chart)
+
+```
+
+
+## *Map with countries colored based on the percentage of informed decision-making among women aged 15-19 years*
+<div class="small-font">
+The Map visualization gives a general picture of the world's situation regarding young women's capacity to make wise choices regarding their sexual and reproductive health. *Lighter* shades reflect lower percentages, while **darker** shades denote higher choice percentages.
+
+**Key Findings:**
+
+- **Geographical Patterns:** The map reveals notable geographical trends, with higher observation values generally found in high-income countries and lower in low- and middle-income countries. This disparity highlights the importance of addressing social, cultural, and economic factors that impact young women's decision-making autonomy.
+- **Regional Variations:** Significant variations exist between neighboring countries within regions, emphasizing the need to examine context-specific factors contributing to these observation values. Understanding these factors will help tailor effective interventions that empower young women to make informed choices about their health.
+- **Interactive Experience:** The world map's interactivity allows users to explore data by hovering over individual countries, displaying the observation value and country name. This feature facilitates a deeper understanding of global patterns and enhances the user's engagement with the data.
+</div>
+```{r}
+# Load required libraries
+library(rnaturalearth)
+install.packages("rnaturalearthdata")
+library(plotly)
+
+# Load viridis package for additional color palettes
+install.packages("viridis")
+library(viridis)
+
+# Get a spatial dataset of country boundaries
+world_map <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Assign the main dataset to a new variable with a simpler name
+main_data <- `unicef_indicator_1.(1)`
+
+# Merge the main dataset (main_data) with the world_map dataset
+merged_data <- world_map %>%
+  left_join(main_data, by = c("name" = "country"))
+
+# Create a ggplot object with merged_data
+world_map_plot <- ggplot(data = merged_data) +
+  geom_sf(aes(fill = obs_value, text = paste("Obs_value:", obs_value, "<br>Country:", name)), size = 0.1) +
+  theme_minimal() +
+  scale_fill_viridis_c(option = "A", direction = -1, trans = "log", 
+                       name = "Observation\nValue", labels = scales::comma, end = 0.9) +
+  labs()
+
+
+# Convert to interactive plotly object
+interactive_world_map <- ggplotly(world_map_plot)
+
+# Include the interactive plot in R Markdown document
+interactive_world_map
+
+```
+
+## Scatterplot of Average GDP and Average Observation Value
+<div class="small-font">
+
+This Scatterplot investigates the correlation between a country's *average GDP and the percentage of young women aged 15-19 making informed choices about their sexual and reproductive health*.
+
+**Key findings:**
+
+- The scatterplot indicates a **positive** correlation between higher GDP countries and young women's ability to make informed choices about their sexual and reproductive health. The relationship between access to education, healthcare services, and social support systems and a country's GDP is significant. Countries with higher GDPs tend to have better access to these resources.
+
+- Despite the overall trend, there is **significant** variation in observation values across countries with similar GDP levels. The significance of taking into account the distinct cultural, social, and political elements that affect the decisions and encounters of young women in various nations is emphasized by this variation. For example, certain countries may have strict cultural or legal restrictions that hinder young women's ability to obtain reproductive health information and services, regardless of their GDP.
+
+- The scatterplot also underscores the need to emphasize the importance of **customized interventions** that consider the factors contributing to the correlation between mean GDP and observation values, as highlighted by the scatterplot. Stakeholders can effectively support young women's empowerment and well-being by implementing policies and programs that target *economic and non-economic barriers* to informed reproductive health choices.
+</div>
+
+<style>
+.callout {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-left-width: 5px;
+  border-radius: 3px;
+  border-left-color: #2196F3;
+}
+</style>
+
+<div class="callout">
+**Insight**: Despite the overall trend, there is **significant** variation in observation values across countries with similar GDP levels due to distinct cultural, social, and political elements.
+</div>
+
+```{r}
+# Load the required libraries
+library(dplyr)
+library(ggplot2)
+
+# Load the datasets
+`unicef_indicator_1.(1)` <- read.csv("/cloud/project/unicef_indicator_1 (1).csv")
+`unicef_metadata.(1)` <- read.csv("/cloud/project/unicef_metadata (1).csv")
+
+# Merge the datasets
+merged_data <- `unicef_indicator_1.(1)` %>%
+  left_join(`unicef_metadata.(1)`, by = "country")
+
+# Load required libraries
+library(RColorBrewer)
+
+# Install the RColorBrewer package if not already installed
+if (!requireNamespace("RColorBrewer", quietly = TRUE)) {
+  install.packages("RColorBrewer")
+}
+
+
+# Calculate the average obs_value and GDP per country
+country_averages <- merged_data %>%
+  group_by(country) %>%
+  summarise(avg_obs_value = mean(obs_value, na.rm = TRUE), avg_GDP = mean(GDP, na.rm = TRUE))
+
+# Get a color palette for the countries
+n_countries <- length(unique(country_averages$country))
+color_palette <- brewer.pal(min(n_countries, 9), "Set1") # Set1 is a categorical palette, max 9 colors
+colors <- color_palette[as.numeric(as.factor(country_averages$country)) %% 9 + 1]
+
+# Create the scatter plot with a linear regression line
+scatter_plot <- ggplot(country_averages, aes(x = avg_GDP, y = avg_obs_value)) +
+  geom_point(aes(color = country, text = paste("Country:", country, "<br>Avg GDP:", avg_GDP, "<br>Avg Obs Value:", avg_obs_value)), alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "black") +
+  scale_color_manual(values = colors) +
+  theme_minimal() +
+  labs( x = "Avg GDP per capita",
+       y = "Avg Obs Value") +
+  theme(legend.position = "none")
+
+# Convert to interactive plotly object
+interactive_scatter_plot <- ggplotly(scatter_plot, tooltip = "text")
+
+interactive_scatter_plot
+
+
+
+```
+## Life Expectancy at Birth in Selected Countries: A Time Series Analysis
+<div class="small-font">
+*The time series chart* explores life expectancy at birth trends for 16 countries from various regions. This analysis aims to understand the progress made in improving life expectancy and the factors contributing to these changes.
+
+**Key Findings:**
+
+- **Overall Upward Trend**: The chart reveals a general upward trend in life expectancy at birth for most selected countries, attributable to advances in healthcare, better access to medical services, and effective public health policies.
+- **Country-Specific Trends**: The rate of improvement and starting points differ significantly across countries, highlighting the importance of examining each country's unique context and challenges to understand factors driving changes in life expectancy.
+- **Targeted Interventions**: The chart emphasizes the need for tailored health interventions addressing specific health issues and social determinants of health affecting different countries. By focusing on targeted policies and programs, stakeholders can improve life expectancy and health outcomes more effectively.
+</div>
+
+<div class="callout">
+**Insight**: The time series chart shows that life expectancy has generally **increased** over time for the selected countries, reflecting improvements in *healthcare, living conditions, and access to education.*
+</div>
+
+```{r}
+
+# Load required libraries
+library(plotly)
+
+# List of selected countries
+selected_countries <- c("Albania", "Bangladesh", "Cameroon", "Ethiopia", "Haiti", "Jordan", "Madagascar", "Malawi", "Nigeria", "Pakistan", "Philippines", "Rwanda", "Senegal", "Uganda", "Uzbekistan", "Zimbabwe")
+
+# Filter data for selected countries
+filtered_data <- `unicef_metadata.(1)` %>%
+  filter(country %in% selected_countries)
+
+# Create the time series chart
+life_expectancy_plot <- ggplot(data = filtered_data, aes(x = year, y = `Life.expectancy.at.birth..total..years.`, group = country, color = country, text = paste("Country:", country, "<br>Year:", year, "<br>Life Expectancy:", `Life.expectancy.at.birth..total..years.`))) +
+  geom_line() +
+  theme_minimal() +
+  labs( x = "Year",
+       y = "Life Expectancy at Birth (years)") +
+  theme(legend.position = "bottom")
+
+# Convert to interactive plotly object
+interactive_life_expectancy_plot <- ggplotly(life_expectancy_plot, tooltip = "text")
+
+# Include the interactive plot
+interactive_life_expectancy_plot
+
+
+```
+<br>
+<br>
+<br>
+
+
+
+
+In **conclusion**, our comprehensive analysis of the datasets has provided valuable insights into the relationship between various socio-economic factors and the sexual and reproductive health of young women. In addition, the interactive visualizations, including the bar chart, world map, scatter plot, and time series chart, enabled us to explore the data more effectively and identify trends and patterns across different countries.
+
+The bar chart revealed significant variations in observation values among countries, highlighting the importance of understanding local contexts and tailoring interventions accordingly. The world map allowed us to visualize the geographic distribution of observation values, uncovering potential regional disparities. The scatter plot demonstrated a positive correlation between a nation's average GDP and observation value. However, there is significant variation in observation values across countries with similar GDP levels. The significance of taking into account the distinct cultural, social, and political elements that affect the decisions and encounters of young women in various nations is emphasized by this variation. Lastly, the time series chart exhibited an overall increase in life expectancy for the selected countries, reflecting improvements in healthcare, living conditions, and education access.
+
+These findings emphasize the need for continued investment in policies and programs that promote gender equality, empower women, and provide access to quality healthcare and education. We can contribute to a more equitable and healthier future for young women worldwide by addressing these critical areas.
+
+
+![](Couleur-logo-UNICEF.jpg)
+
